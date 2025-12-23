@@ -39,7 +39,7 @@ jobs:
            -t ${{ secrets.ACR_NAME }}.azurecr.io/sap-opportunities-frontend:latest \
            ./frontend   
 
-   
+        
       
       # 5. דחוף את התמונה ל-ACR
       - name: Push to ACR
@@ -53,3 +53,5 @@ jobs:
             --name sap-opportunities-frontend \
             --resource-group ${{ secrets.RESOURCE_GROUP }} \
             --image ${{ secrets.ACR_NAME }}.azurecr.io/sap-opportunities-frontend:latest
+
+            
