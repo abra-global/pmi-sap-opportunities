@@ -1,0 +1,83 @@
+name: Setup ACR Access (Run Once)
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Setup Frontend ACR Access
+        run: |
+          echo "Setting up Managed Identity for Frontend..."
+          
+          # Enable system-assigned identity
+          az containerapp identity assign \
+            --name sap-opportunities-frontend \
+            --resource-group pmi-sap-ops \
+            --system-assigned
+          
+          echo "Getting Principal ID..."
+          PRINCIPAL_ID=$(az containerapp show \
+            --name sap-opportunities-frontend \
+            --resource-group pmi-sap-ops \
+            --query identity.principalId -o tsv)
+          
+          echo "Principal ID: $PRINCIPAL_ID"
+          
+          echo "Getting ACR ID..."
+          ACR_ID=$(az acr show \
+            --name pmiops \
+            --query id -o tsv)
+          
+          echo "ACR ID: $ACR_ID"
+          
+          echo "Assigning AcrPull role..."
+          az role assignment create \
+            --assignee $PRINCIPAL_ID \
+            --role AcrPull \
+            --scope $ACR_ID
+          
+          echo "✅ Frontend setup complete!"
+      
+      - name: Setup Backend ACR Access
+        run: |
+          echo "Setting up Managed Identity for Backend..."
+          
+          az containerapp identity assign \
+            --name sap-opportunities-backend \
+            --resource-group pmi-sap-ops \
+            --system-assigned
+          
+          PRINCIPAL_ID=$(az containerapp show \
+            --name sap-opportunities-backend \
+            --resource-group pmi-sap-ops \
+            --query identity.principalId -o tsv)
+          
+          echo "Principal ID: $PRINCIPAL_ID"
+          
+          ACR_ID=$(az acr show \
+            --name pmiops \
+            --query id -o tsv)
+          
+          az role assignment create \
+            --assignee $PRINCIPAL_ID \
+            --role AcrPull \
+            --scope $ACR_ID
+          
+          echo "✅ Backend setup complete!"
+      
+      - name: Summary
+        run: |
+          echo "=========================================="
+          echo "✅ ACR Access Setup Complete!"
+          echo "=========================================="
+          echo ""
+          echo "Both Container Apps now have permission to pull images from ACR."
+          echo "You can now run regular deployments without any ACR access issues."
