@@ -50,6 +50,14 @@ jobs:
             --server ${{ secrets.ACR_NAME }}.azurecr.io \
             --username ${{ secrets.ACR_NAME }} \
             --password ${{ secrets.ACR_PASSWORD }}
+
+      - name: Fix target port to 8080
+        run: |
+          echo "Updating ingress to target port 8080..."
+          az containerapp ingress update \
+          --name sap-opportunities-backend \
+          --resource-group ${{ secrets.RESOURCE_GROUP }} \
+          --target-port 8080      
       - name: Deploy to Azure Container Apps
         run: |
           REVISION_SUFFIX="rev-$(date +%Y%m%d-%H%M%S)"
