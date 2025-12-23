@@ -56,12 +56,16 @@ jobs:
             --server ${{ secrets.ACR_NAME }}.azurecr.io \
             --username ${{ secrets.ACR_NAME }} \
             --password ${{ secrets.ACR_PASSWORD }}
-            
+
       - name: Deploy to Azure Container Apps
         run: |
+          REVISION_SUFFIX="rev-$(date +%Y%m%d-%H%M%S)"
+          echo "Creating new revision: $REVISION_SUFFIX"
+          
           az containerapp update \
             --name sap-opportunities-frontend \
             --resource-group ${{ secrets.RESOURCE_GROUP }} \
             --image ${{ secrets.ACR_NAME }}.azurecr.io/sap-opportunities-frontend:latest
+            --revision-suffix $REVISION_SUFFIX
             
             
