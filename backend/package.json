@@ -47,6 +47,7 @@
     "test": "npm run mocha",
     "bundle:client": "npm run compile && npm pack --pack-destination ./public"
   },
+  
  
   "dependencies": {
     "@feathersjs/adapter-commons": "^5.0.37",

@@ -12,6 +12,7 @@ export default function OpportunityStatus({value, onChange}: StatusProps) {
     // const [selectedStatus, setSelectedStatus] = useState('')
 
     const baseUrl = import.meta.env.VITE_API_URL
+    console.log("baseUrl:", baseUrl)
 
     const fetchStatus = async () => {
         try {
