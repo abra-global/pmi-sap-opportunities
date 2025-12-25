@@ -7,7 +7,7 @@ import axios from 'axios'
 
 
 
-
+console.log("🔥 SAP STATUS SERVICE FILE LOADED 🔥")
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
 export class SapStatusService {
@@ -16,6 +16,7 @@ export class SapStatusService {
   async find(_params?: Params): Promise<any[]> {
     const baseUrl = process.env.BASE_URL_SAP
     const statusUrl = process.env.URL_STATUS
+    console.log("status:", statusUrl)
     try {
        const results = await axios.get(`${baseUrl}/${statusUrl}`, 
         { auth: {
@@ -29,7 +30,14 @@ export class SapStatusService {
     return results.data.value
 
     }catch(error: any){
-      throw new Error(error)
+       console.error("=== ERROR in SapStatus Service ===")
+      console.error("Error message:", error.message)
+      console.error("Error response status:", error.response?.status)
+      console.error("Error response data:", error.response?.data)
+      console.error("Full error:", error)
+      
+     
+      throw error
     }
    
   }
