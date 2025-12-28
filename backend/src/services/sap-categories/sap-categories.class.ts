@@ -14,7 +14,9 @@ export class SapCategoriesService{
   async find(_params?: Params): Promise<any[]> {
     const baseUrl = process.env.BASE_URL_SAP
     const categoriesUrl = process.env.URL_CATEGORIES
+    console.log("categoty:", categoriesUrl)
     try{
+      
       const results = await axios.get(`${baseUrl}/${categoriesUrl}`, 
         { auth: {
           username: process.env.SAP_USER || '',
