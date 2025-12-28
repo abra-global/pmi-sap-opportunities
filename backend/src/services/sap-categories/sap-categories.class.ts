@@ -25,7 +25,8 @@ export class SapCategoriesService{
       return results.data.value
 
     }catch(error: any){
-      throw new Error(error)
+      console.error("Full error:", error.response?.data || error.message)
+      throw new Error(`Failed to fetch categories: ${error.message}`)
     }
     
   }

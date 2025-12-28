@@ -35,7 +35,8 @@ export class SapSalesCyclesService {
 
     }
     catch (error: any) {
-      throw new Error(error)
+      console.error("Full error:", error.response?.data || error.message)
+      throw new Error(`Failed to fetch Sales Cycles: ${error.message}`)
     }
 
   }

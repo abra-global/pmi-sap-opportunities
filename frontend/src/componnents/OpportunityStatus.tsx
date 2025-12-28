@@ -33,19 +33,12 @@ export default function OpportunityStatus({ value, onChange }: StatusProps) {
     
 
 
-    const statusOptions = Array.from(
-        new Map(
-            status
-                .filter(s => s.isActive)
-                .map(stat => [
-                    stat.description,
-                    {
-                        value: stat.code,
-                        label: stat.description
-                    }
-                ])
-        ).values()
-    );
+    const statusOptions = status
+  .filter(s => s.isActive)
+  .map(stat => ({
+    value: stat.code,
+    label: stat.description
+  }));
     const statusOpen = statusOptions.find(s => s.label.toLowerCase() === 'open')
     const defaultValue = value ? statusOptions.find(o => o.value === value) : statusOptions.find(o => o.value === statusOpen?.value)
 
