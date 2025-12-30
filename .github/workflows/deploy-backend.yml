@@ -27,6 +27,21 @@ jobs:
       - name: Login to ACR
         run: |
           az acr login --name ${{ secrets.ACR_NAME }}
+
+      - name: Enable Managed Identity on Container App
+        run: |
+          az containerapp identity assign \
+          --name sap-opportunities-backend \
+          --resource-group ${{ secrets.RESOURCE_GROUP }}   
+      - name: Grant AcrPull to Container App Managed Identity
+        run: |
+         az role assignment create \
+         --assignee $(az containerapp identity show --name sap-opportunities-backend --resource-group ${{ secrets.RESOURCE_GROUP }} --query principalId -o tsv) \
+         --role AcrPull \
+         --scope $(az acr show --name ${{ secrets.ACR_NAME }} --resource-group ${{ secrets.RESOURCE_GROUP }} --query id -o tsv) || true
+     
+
+
       
       # שלב 4: בנה את תמונת הDocker
       - name: Build Docker image
@@ -42,14 +57,15 @@ jobs:
       
       # שלב 6: עדכן את ה-Container App ב-Azure
 
-      - name: Set ACR credentials
-        run: |
-          az containerapp registry set \
-            --name sap-opportunities-backend \
-            --resource-group ${{ secrets.RESOURCE_GROUP }} \
-            --server ${{ secrets.ACR_NAME }}.azurecr.io \
-            --username ${{ secrets.ACR_NAME }} \
-            --password ${{ secrets.ACR_PASSWORD }}
+      # - name: Set ACR credentials
+      #   run: |
+      #     az containerapp registry set \
+      #       --name sap-opportunities-backend \
+      #       --resource-group ${{ secrets.RESOURCE_GROUP }} \
+      #       --server ${{ secrets.ACR_NAME }}.azurecr.io \
+      #       --username ${{ secrets.ACR_NAME }} \
+            # --password ${{ secrets.ACR_PASSWORD }}
+
 
       - name: Fix target port to 8080
         run: |

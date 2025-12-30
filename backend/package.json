@@ -46,9 +46,14 @@
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
     "test": "npm run mocha",
     "bundle:client": "npm run compile && npm pack --pack-destination ./public"
-  }, 
 
+
+  }, 
   
+
+
+
+
 
 
 
