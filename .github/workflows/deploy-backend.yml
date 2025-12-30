@@ -69,12 +69,12 @@ jobs:
             --image ${{ secrets.ACR_NAME }}.azurecr.io/sap-opportunities-backend:latest \
             --revision-suffix "$REVISION_SUFFIX" \
             --set-env-vars \
-              BASE_URL_SAP='${{ secrets.BASE_URL_SAP }}' \
-              URL_ACCOUNT='${{ secrets.URL_ACCOUNT }}' \
-              URL_SALES_CYCLES='${{ secrets.URL_SALES_CYCLES }}' \
-              URL_STATUS='${{ secrets.URL_STATUS }}' \
-              URL_CATEGORIES='${{ secrets.URL_CATEGORIES }}' \
-              URL_OPPORTUNITY='${{ secrets.URL_OPPORTUNITY }}' \
-              SAP_USER='${{ secrets.SAP_USER }}' \
-              SAP_PASSWORD='${{ secrets.SAP_PASSWORD }}' \
-              PORT=8080
+              "BASE_URL_SAP=${{ secrets.BASE_URL_SAP }}" \
+              "URL_ACCOUNT=${{ secrets.URL_ACCOUNT }}" \
+              "URL_SALES_CYCLES=${{ secrets.URL_SALES_CYCLES }}" \
+              "URL_STATUS=${{ secrets.URL_STATUS }}" \
+              "URL_CATEGORIES=${{ secrets.URL_CATEGORIES }}" \
+              "URL_OPPORTUNITY=${{ secrets.URL_OPPORTUNITY }}" \
+              "SAP_USER=${{ secrets.SAP_USER }}" \
+              "SAP_PASSWORD=${{ secrets.SAP_PASSWORD }}" \
+              "PORT=8080"
