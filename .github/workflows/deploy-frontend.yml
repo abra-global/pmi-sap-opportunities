@@ -50,14 +50,7 @@ jobs:
       
       # 6. Deploy ל-Azure Container Apps
 
-      - name: Set ACR credentials
-        run: |
-          az containerapp registry set \
-            --name sap-opportunities-frontend \
-            --resource-group ${{ secrets.RESOURCE_GROUP }} \
-            --server ${{ secrets.ACR_NAME }}.azurecr.io \
-            --username ${{ secrets.ACR_NAME }} \
-            --password ${{ secrets.ACR_PASSWORD }}
+     
 
       - name: Deploy to Azure Container Apps
         run: |
