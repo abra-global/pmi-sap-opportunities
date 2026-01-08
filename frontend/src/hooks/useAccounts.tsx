@@ -42,6 +42,9 @@ export const useAccounts = (): UseAccountsReturn => {
       setLoading(false);
     }
   };
+  if (error) {
+  console.error(error);
+}
 
   useEffect(() => {
     fetchAccounts();
