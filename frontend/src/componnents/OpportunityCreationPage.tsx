@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 
@@ -7,6 +7,10 @@ import SalesCycles from './SalesCycle';
 import SalesPhase from './SalesPhase';
 import OpportunityStatus from './OpportunityStatus'
 import CategoriesSelect from './CategoriesSelect';
+
+import { TableHead } from './TableHead';
+import { useAccounts } from '../hooks/useAccounts';
+// import {api} from "../api"
 function OpportunityCreation() {
 
     const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
@@ -17,45 +21,77 @@ function OpportunityCreation() {
 
     const [selectedPhase, setSelectedPhase] = useState('')
 
-    const [loading, setLoading] = useState(false);
-    const [accounts, setAccounts] = useState<any[]>([])
+    // חיפוש סטייטס
     const [ownerFilter, setOwnerFilter] = useState('All Owners');
+    const [nameFilter, setNameFilter] = useState('All Names');
+    const [territoryFilter, setTerritoryFilter] = useState('All Territories');
+
+    const [sortField, setSortField] = useState<string | null>(null)
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
     const baseUrl = import.meta.env.VITE_API_URL as string
-    console.log("baseUrl:", baseUrl)
+  
+    const { accounts, loading, setAccounts, setLoading } = useAccounts();
 
-    const fetchAccounts = async () => {
-        try {
-            const results = await axios.get(`${baseUrl}/sap-accounts`)
+    const handleSort = (field: string, direction: 'asc' | 'desc') => {
+        setSortField(field)
+        setSortDirection(direction)
 
-            setAccounts(results.data)
+        const sorted = [...accounts].sort((a, b) => {
+            let aValue: string = ''
+            let bValue: string = ''
 
+            if (field === 'name') {
+                aValue = a.formattedName ?? ''
+                bValue = b.formattedName ?? ''
+            } else if (field === 'territory') {
+                aValue = a.salesTerritories?.[0]?.salesTerritoryName ?? ''
+                bValue = b.salesTerritories?.[0]?.salesTerritoryName ?? ''
+            }
 
-        }
-        catch (err: any) {
-            console.log("error:", err)
-        }
+            return direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
+        })
 
+        setAccounts(sorted)
     }
-    useEffect(() => {
-        fetchAccounts()
 
-    }, [])
+    //חיפוש לפי owner
     const ownersFromAccounts = [
         ...new Set(accounts.map((owner) => owner.ownerFormattedName)
-            .filter(Boolean))]
+            .filter((name): name is string => Boolean(name)))]
         .sort()
     const owners = ['All Owners', ...ownersFromAccounts];
     const ownerOptions = owners.map((o) => ({ value: o, label: o }))
 
-    const filteredAccounts = ownerFilter === 'All Owners' ? accounts :
-        accounts.filter(acc => acc.ownerFormattedName == ownerFilter)
+    //חיפוש לפי שם לקוח
+    const nameFromAccounts = [...new Set(accounts.map(name => name.formattedName).filter(Boolean))].sort()
+    const namesAccounts = ['All Names', ...nameFromAccounts];
+    const namesOptions = namesAccounts.map((n) => ({ value: n, label: n }))
+
+    //חיפוש לפי טריטוריה
+    const territoryFromAccounts = [...new Set(accounts.map(territory => territory.salesTerritories?.[0].salesTerritoryName).filter((name): name is string => Boolean(name)))].sort()
+    console.log("territoryFromAccounts ", territoryFromAccounts)
+    const territoryAcconts = ['All Territories', ...territoryFromAccounts];
+    const territoryOptions = territoryAcconts.map((t) => ({ value: t, label: t }))
+
+
+
+    const filteredAccounts = ownerFilter === 'All Owners' &&
+        nameFilter === 'All Names' &&
+        territoryFilter === 'All Territories' ?
+        accounts :
+        accounts.filter(acc =>
+            acc.ownerFormattedName == ownerFilter ||
+            acc.formattedName == nameFilter ||
+            acc.salesTerritories?.[0].salesTerritoryName == territoryFilter)
+
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentAccounts = filteredAccounts.slice(indexOfFirstItem, indexOfLastItem);
+    console.log("filtered: ", filteredAccounts)
     const totalPages = Math.ceil(filteredAccounts.length / itemsPerPage)
 
 
@@ -65,7 +101,7 @@ function OpportunityCreation() {
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelectedAccounts(accounts.map(acc => acc.displayId));
+            setSelectedAccounts(currentAccounts.map(acc => acc.displayId));
         } else {
             setSelectedAccounts([]);
         }
@@ -113,11 +149,11 @@ function OpportunityCreation() {
 
 
         if (selectedAccounts.length === 0) {
-            alert('נא לבחור לפחות לקוח אחד');
+            alert('Please select at least one customer');
             return;
         }
         if (!isFormValid) {
-            alert('נא למלא את כל שדות החובה ולבחור לפחות לקוח אחד');
+            alert('Please fill in all required fields and select at least one customer');
             return;
         }
 
@@ -148,14 +184,14 @@ function OpportunityCreation() {
             const { successful, failed, results } = response.data;
 
             if (failed === 0) {
-                alert(`✅ נוצרו ${successful} הזדמנויות בהצלחה!`);
+                alert(`✅ Successfully created ${successful} opportunities!`);
             } else {
                 const failedDetails = results
                     .filter((r: any) => !r.success)
                     .map((r: any) => `${r.accountId}: ${r.error}`)
                     .join('\n');
 
-                alert(`נוצרו ${successful} הזדמנויות\n${failed} נכשלו:\n${failedDetails}`);
+                alert(`Created ${successful} opportunities\n${failed} failed:\n${failedDetails}`);
             }
 
 
@@ -169,7 +205,7 @@ function OpportunityCreation() {
 
         } catch (error: any) {
             console.error('Error:', error);
-            alert('שגיאה: ' + (error.response?.data?.message || error.message));
+            alert('Error ' + (error.response?.data?.message || error.message));
         } finally {
             setLoading(false);
         }
@@ -195,26 +231,57 @@ function OpportunityCreation() {
                 </h2>
 
                 {/* Filter Section */}
-                <div className="flex gap-8">
-                    <div className="flex flex-col items-start">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">
-                            Filter by:
-                        </h3>
+                {/* Filter Section */}
+                <div className="flex flex-col gap-4 mb-6">
+                    {/* Title */}
+                    <h3 className="text-lg font-medium text-gray-900 pr-160">
+                        Filter by:
+                    </h3>
+
+                    {/* Filters row */}
+                    <div className="flex gap-8 ">
+                        {/* Owner */}
                         <div className="max-w-md w-full">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Owner
                             </label>
                             <Select
                                 options={ownerOptions}
-
                                 value={{ value: ownerFilter, label: ownerFilter }}
                                 onChange={(option) => setOwnerFilter(option?.value || '')}
-                                isSearchable={true}
-                                placeholder="Search owner..."
+                                isSearchable
+                            />
+                        </div>
+
+                        {/* Name */}
+                        <div className="max-w-md w-full">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Name
+                            </label>
+                            <Select
+                                options={namesOptions}
+                                value={{ value: nameFilter, label: nameFilter }}
+                                onChange={(option) => setNameFilter(option?.value || '')}
+                                isSearchable
+                            />
+                        </div>
+
+                        {/* Territory */}
+                        <div className="max-w-md w-full">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Territory
+                            </label>
+                            <Select
+                                options={territoryOptions}
+                                value={{ value: territoryFilter, label: territoryFilter }}
+                                onChange={(option) => setTerritoryFilter(option?.value || '')}
+                                isSearchable
                             />
                         </div>
                     </div>
                 </div>
+
+
 
                 {/* Table Section */}
                 <div className="bg-white rounded-lg shadow-sm mb-6">
@@ -226,30 +293,39 @@ function OpportunityCreation() {
                                     <th className="px-6 py-4 text-left">
 
                                         <div className="flex items-center gap-2 mr-3">
-                                             <span className="text-sm font-medium text-gray-900">
+                                            <span className="text-sm font-medium text-gray-900">
                                                 All
                                             </span>
                                             <input
                                                 type="checkbox"
-                                                checked={selectedAccounts.length === accounts.length && accounts.length > 0}
+                                                checked={currentAccounts.length > 0 && currentAccounts.every(acc => selectedAccounts.includes(acc.displayId))}
                                                 onChange={handleSelectAll}
                                                 className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                                             />
-                                           
+
                                         </div>
                                     </th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                                        Client Code
-                                    </th>
-                                    <th className="px-6 py-4 pl-20 text-left text-sm font-semibold text-gray-900">
-                                        Client Name
-                                    </th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+
+
+                                    <TableHead
+                                        headName="Client Name"
+                                        field="name"
+                                        sortField={sortField}
+                                        sortDirection={sortDirection}
+                                        handleSort={handleSort}
+                                    />
+
+                                    <th className="px-6 py-4 pl-10 text-left text-sm font-semibold text-gray-900">
                                         Owner
                                     </th>
-                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                                        Territory
-                                    </th>
+                                    <TableHead
+                                        headName="Territory"
+                                        field="territory"
+                                        sortField={sortField}
+                                        sortDirection={sortDirection}
+                                        handleSort={handleSort}
+                                    />
+
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -265,7 +341,7 @@ function OpportunityCreation() {
                                                     className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                                                 />
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{account?.displayId}</td>
+
                                             <td className="px-6 py-4 text-sm text-gray-900">{account?.formattedName.substring(0, account?.formattedName.lastIndexOf(' '))}</td>
                                             <td className="px-6 py-4 text-sm text-gray-900">{account?.ownerFormattedName || '-'}</td>
                                             <td className="px-6 py-4 text-sm text-gray-900">{account?.salesTerritories?.[0]?.salesTerritoryName || '-'}</td>
@@ -397,10 +473,10 @@ function OpportunityCreation() {
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            שגיאה
+                            Error
                         </h3>
                         <p className="text-gray-700 mb-6">
-                            נא למלא את כל שדות החובה ולבחור לפחות לקוח אחד
+                            Please fill in all required fields and select at least one client
                         </p>
                         <div className="flex justify-end">
                             <button
@@ -408,7 +484,7 @@ function OpportunityCreation() {
                                 style={{ backgroundColor: '#2563eb' }}
                                 onClick={() => setShowValidationError(false)}
                             >
-                                הבנתי
+                                I understand
                             </button>
                         </div>
                     </div>

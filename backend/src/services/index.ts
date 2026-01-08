@@ -1,3 +1,4 @@
+import { territories } from './territories/territories'
 import { opportunities } from './opportunities/opportunities'
 // import { sapProductGroup } from './sap-product-group/sap-product-group'
 import { sapCategories } from './sap-categories/sap-categories'
@@ -10,6 +11,7 @@ import { sapAccounts } from './sap-accounts/sap-accounts'
 import type { Application } from '../declarations'
 
 export const services = (app: Application) => {
+  app.configure(territories)
   app.configure(opportunities)
   // app.configure(sapProductGroup)
   app.configure(sapCategories)
