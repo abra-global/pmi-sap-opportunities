@@ -38,6 +38,8 @@ jobs:
         run: |
          docker build \
            --build-arg VITE_API_URL=${{ secrets.BACKEND_URL }} \
+           --build-arg VITE_AZURE_CLIENT_ID=${{ secrets.VITE_AZURE_CLIENT_ID }} \
+           --build-arg VITE_AZURE_TENANT_ID=${{ secrets.VITE_AZURE_TENANT_ID }} \
            -t ${{ secrets.ACR_NAME }}.azurecr.io/sap-opportunities-frontend:latest \
            ./frontend   
 
