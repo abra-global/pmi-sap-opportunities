@@ -20,6 +20,7 @@ api.interceptors.request.use(async (config) => {
         account: accounts[0], 
       });
       const token = response.accessToken;
+      console.log("tokens:", token)
 
       
      if (!config.headers) {
@@ -27,6 +28,7 @@ api.interceptors.request.use(async (config) => {
       }
 
       config.headers["Authorization"] = `Bearer ${token}`;
+      console.log("Headers:", config.headers);
     } catch (err) {
       console.error("Failed to acquire token silently", err);
     }
