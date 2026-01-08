@@ -1,6 +1,7 @@
-import axios from "axios";
+// import axios from "axios";
 import { useEffect, useState } from "react";
 import Select from "react-select";
+import {api} from "../api"
 
 interface StatusProps {
     value: string,
@@ -15,7 +16,7 @@ export default function OpportunityStatus({ value, onChange }: StatusProps) {
 
     const fetchStatus = async () => {
         try {
-            const res = await axios.get(`${baseUrl}/sap-status`)
+            const res = await api.get(`${baseUrl}/sap-status`)
             console.log(res)
             console.log(res.data)
             setStatus(res.data)

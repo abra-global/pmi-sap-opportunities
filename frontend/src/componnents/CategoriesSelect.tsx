@@ -1,7 +1,7 @@
-import axios from "axios";
+// import axios from "axios";
 import { useEffect, useState } from "react";
 import Select from "react-select";
-
+import {api} from "../api"
 
 interface CategoryProps{
     value: string,
@@ -13,7 +13,7 @@ export default function CategoriesSelect({value,onChange}: CategoryProps){
     //  const [selectedCategory, setSelectedCategory] = useState('')
     const fetchCategories = async() => {
         try{
-            const res = await axios.get(`${baseUrl}/sap-categories`)
+            const res = await api.get(`${baseUrl}/sap-categories`)
             console.log(res.data)
             setCategories(res.data)
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import axios from 'axios';
+
 
 import Select from 'react-select';
 import SalesCycles from './SalesCycle';
@@ -10,7 +10,7 @@ import CategoriesSelect from './CategoriesSelect';
 
 import { TableHead } from './TableHead';
 import { useAccounts } from '../hooks/useAccounts';
-// import {api} from "../api"
+import {api} from "../api"
 function OpportunityCreation() {
 
     const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
@@ -29,7 +29,7 @@ function OpportunityCreation() {
     const [sortField, setSortField] = useState<string | null>(null)
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
-    const baseUrl = import.meta.env.VITE_API_URL as string
+    // const baseUrl = import.meta.env.VITE_API_URL as string
   
     const { accounts, loading, setAccounts, setLoading } = useAccounts();
 
@@ -170,7 +170,7 @@ function OpportunityCreation() {
                 }
             }).filter(acc => acc.id && acc.name)
 
-            const response = await axios.post(`${baseUrl}/opportunities`, {
+            const response = await api.post(`/opportunities`, {
                 oppName: opportunityName,
                 accounts: selectedAccountsData,
                 salesCycleCode: selectedCycle,

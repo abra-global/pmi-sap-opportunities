@@ -1,7 +1,7 @@
-import axios from "axios"
+// import axios from "axios"
 import { useEffect, useState } from "react";
 import Select from "react-select"
-
+import {api} from "../api"
 interface SalesPhaseProps {
     value: string,
     onChange: (value: string) => void,
@@ -14,7 +14,7 @@ export default function SalesPhase({ value, onChange, selectedCycleCode }: Sales
     const fetchPhase = async () => {
         const baseUrl = import.meta.env.VITE_API_URL
         try {
-            const res = await axios.get(`${baseUrl}/sap-sales-cycles`)
+            const res = await api.get(`${baseUrl}/sap-sales-cycles`)
             console.log("response:", res.data)
             const activeCycles = res.data.filter((cycle: any) => cycle.isActive === true);
             console.log('activeCycles :', activeCycles)

@@ -1,7 +1,7 @@
-import axios from "axios";
+// import axios from "axios";
 import { useEffect, useState } from "react";
 import Select from "react-select";
-
+import {api} from "../api"
 interface SalesCyclesProps {
     value: string;
     onChange: (value: string) => void;
@@ -14,7 +14,7 @@ export default function SalesCycles({value, onChange}: SalesCyclesProps ) {
         const baseUrl = import.meta.env.VITE_API_URL;
 
         try {
-            const res = await axios.get(`${baseUrl}/sap-sales-cycles`);
+            const res = await api.get(`${baseUrl}/sap-sales-cycles`);
             setSalesCycles(res.data);
         } catch (error: any) {
             console.error("Error:", error);
