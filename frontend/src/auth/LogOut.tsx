@@ -1,7 +1,9 @@
 import { useMsal } from "@azure/msal-react";
 
 export const LogOut = () => {
+    
     const {instance} = useMsal();
+    console.log("instance:", instance)
 
     const handelLogOut = async () => {
         try {

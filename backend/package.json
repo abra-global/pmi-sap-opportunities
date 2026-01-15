@@ -46,35 +46,7 @@
     "mocha": "cross-env NODE_ENV=test mocha test/ --require ts-node/register --recursive --extension .ts --exit",
     "test": "npm run mocha",
     "bundle:client": "npm run compile && npm pack --pack-destination ./public"
-
-
-    
-
-
-  }, 
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-  
-
- 
+  },
   "dependencies": {
     "@feathersjs/adapter-commons": "^5.0.37",
     "@feathersjs/authentication": "^5.0.37",
@@ -95,6 +67,7 @@
     "@feathersjs/rest-client": "^5.0.37",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.10.2",
+    "@types/react-select": "^5.0.0",
     "axios": "^1.13.2",
     "cross-env": "^10.1.0",
     "mocha": "^11.7.5",

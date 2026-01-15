@@ -16,24 +16,7 @@ const app: Application = koa(feathers())
 app.configure(configuration(configurationValidator))
 
 // Set up Koa middleware
-app.use(cors({
-  origin: (ctx) => {
-    const allowedOrigins = app.get('origins') || [];
-    const origin = ctx.get('Origin');
-    
-    // בדוק אם ה-origin מותר
-    if (allowedOrigins.includes(origin)) {
-      return origin;
-    }
-    
-    // ברירת מחדל - החזר את הראשון ברשימה
-    return allowedOrigins[0] || '*';
-  },
-  credentials: true,
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'Accept']
-}))
-
+app.use(cors())
 app.use(serveStatic(app.get('public')))
 app.use(errorHandler())
 app.use(parseAuthentication())

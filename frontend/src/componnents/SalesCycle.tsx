@@ -15,6 +15,7 @@ export default function SalesCycles({value, onChange}: SalesCyclesProps ) {
 
         try {
             const res = await api.get(`${baseUrl}/sap-sales-cycles`);
+            console.log("cycle:", res.data)
             setSalesCycles(res.data);
         } catch (error: any) {
             console.error("Error:", error);
@@ -25,24 +26,37 @@ export default function SalesCycles({value, onChange}: SalesCyclesProps ) {
         fetchSales();
     }, []);
 
-    const optionsCycle = [
-        { value: "", label: "Select Sales Cycle" },
-        ...salesCycles.filter((cycle) => cycle.isActive == true)
+    useEffect(() => {
+        if(!value && salesCycles.length > 0){
+            const defaultCycle = salesCycles.find((c) => 
+                 c.isActive &&
+                c.description.toLowerCase() === 'international market'
+            );
+            if(defaultCycle){
+                onChange(defaultCycle.code)
+            }
+        }
+
+    },[salesCycles] )
+
+    const optionsCycle =       
+        salesCycles.filter((cycle) => cycle.isActive == true)
         .map((cycle) => ({
             value: cycle.code,
             label: cycle.description
         }))
-    ];
+    
+    const selectedOption = optionsCycle.find(o => o.value === value)
 
 
     return (
         <>
             < Select
                 options={optionsCycle}
-                value={value ? optionsCycle.find(o => o.value === value) ?? null : null}
+                value={selectedOption}
                 onChange={(option) => onChange(option?.value || '')}
                 isSearchable={true}
-                placeholder="Select Sales Cycle"
+                // placeholder="All Sales Cycle"
             />
 
         </>

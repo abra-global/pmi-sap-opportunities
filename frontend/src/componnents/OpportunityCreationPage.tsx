@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 
 import Select from 'react-select';
+import { components } from 'react-select';
+import type { OptionProps } from 'react-select';
 import SalesCycles from './SalesCycle';
 import SalesPhase from './SalesPhase';
 import OpportunityStatus from './OpportunityStatus'
@@ -10,27 +12,26 @@ import CategoriesSelect from './CategoriesSelect';
 
 import { TableHead } from './TableHead';
 import { useAccounts } from '../hooks/useAccounts';
-import {api} from "../api"
+import { api } from "../api"
 function OpportunityCreation() {
 
     const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
     const [opportunityName, setOpportunityName] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('')
     const [selectedStatus, setSelectedStatus] = useState('')
-    const [selectedCycle, setSelectedCycle] = useState<any | null>(null);
-
     const [selectedPhase, setSelectedPhase] = useState('')
 
     // חיפוש סטייטס
-    const [ownerFilter, setOwnerFilter] = useState('All Owners');
+    const [ownerFilter, setOwnerFilter] = useState<{ value: string; label: string }[]>([]);
     const [nameFilter, setNameFilter] = useState('All Names');
-    const [territoryFilter, setTerritoryFilter] = useState('All Territories');
+    const [territoryFilter, setTerritoryFilter] = useState<{ value: string; label: string }[]>([]);
+    const [selectedCycle, setSelectedCycle] = useState('');
 
     const [sortField, setSortField] = useState<string | null>(null)
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
     // const baseUrl = import.meta.env.VITE_API_URL as string
-  
+
     const { accounts, loading, setAccounts, setLoading } = useAccounts();
 
     const handleSort = (field: string, direction: 'asc' | 'desc') => {
@@ -71,19 +72,77 @@ function OpportunityCreation() {
     //חיפוש לפי טריטוריה
     const territoryFromAccounts = [...new Set(accounts.map(territory => territory.salesTerritories?.[0].salesTerritoryName).filter((name): name is string => Boolean(name)))].sort()
     console.log("territoryFromAccounts ", territoryFromAccounts)
-    const territoryAcconts = ['All Territories', ...territoryFromAccounts];
+    const territoryAcconts = ['All Territories', 'All except USA', ...territoryFromAccounts];
     const territoryOptions = territoryAcconts.map((t) => ({ value: t, label: t }))
 
+    // בחירה עם checkbox בתוך הסלקט
+    const CheckboxOption = (props: OptionProps<any>) => {
+        return (
+            <components.Option {...props}>
+                <input
+                    type="checkbox"
+                    checked={props.isSelected}
+                    readOnly
+                    style={{ marginRight: 8 }}
+                />
+                <span>{props.label}</span>
+            </components.Option>
+        );
+    };
+    // const customStyles: StylesConfig<any, true> = {
+    //     control: (provided) => ({
+    //         ...provided,
+    //         minHeight: '38px',
+    //         maxHeight: '38px',
+    //     }),
+    //     valueContainer: (provided) => ({
+    //         ...provided,
+    //         maxHeight: '32px',
+    //         overflowX: 'auto',        // 🔥 גלילה אופקית (ימינה-שמאלה)
+    //         overflowY: 'hidden',      // 🔥 בלי גלילה אנכית
+    //         display: 'flex',
+    //         flexDirection: 'row',     // 🔥 שורה (לא עמודה!)
+    //         flexWrap: 'nowrap',       // 🔥 לא לשבור שורה
+    //         alignItems: 'center',     // 🔥 ממורכז אנכית
+    //         padding: '2px 4px',
+    //         gap: '4px',
+    //     }),
+    //     multiValue: (provided) => ({
+    //         ...provided,
+    //         flexShrink: 0,            // 🔥 מונע כיווץ של התגים
+    //         margin: '0',
+    //         whiteSpace: 'nowrap',     // 🔥 התוכן לא נשבר
+    //     }),
+    // };
+    const filteredAccounts = accounts.filter(acc => {
+        const ownerMatch =
+            ownerFilter.length === 0 ||
+            ownerFilter.some(filter => filter.value === acc.ownerFormattedName);
 
+        const nameMatch =
+            nameFilter === 'All Names' ||
+            acc.formattedName === nameFilter;
 
-    const filteredAccounts = ownerFilter === 'All Owners' &&
-        nameFilter === 'All Names' &&
-        territoryFilter === 'All Territories' ?
-        accounts :
-        accounts.filter(acc =>
-            acc.ownerFormattedName == ownerFilter ||
-            acc.formattedName == nameFilter ||
-            acc.salesTerritories?.[0].salesTerritoryName == territoryFilter)
+        const selectedTerritoryValues = territoryFilter.map(f => f.value);
+        const accountTerritory = acc.salesTerritories?.[0]?.salesTerritoryName || '';
+
+        const territoryMatch =
+            territoryFilter.length === 0 ||
+            selectedTerritoryValues.includes('All Territories') ||
+            (selectedTerritoryValues.includes('All except USA') && accountTerritory !== 'United States') ||
+            selectedTerritoryValues.includes(accountTerritory);
+
+        // const salesCycleMatch =
+        //     !selectedCycle ||
+        //     (
+        //         selectedCycle === 'Z002'
+        //             ? acc.salesTerritories?.[0]?.salesTerritoryName === 'United States'
+        //             : acc.salesTerritories?.[0]?.salesTerritoryName !== 'United States'
+        //     );
+
+        return ownerMatch && nameMatch && territoryMatch;
+    });
+
 
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -220,6 +279,12 @@ function OpportunityCreation() {
         setSelectedCategory('');
 
     }
+    useEffect(() => {
+        setSelectedAccounts([]);
+
+        setCurrentPage(1);
+    }, [selectedCycle]);
+
 
 
     return (
@@ -230,7 +295,7 @@ function OpportunityCreation() {
                     New Brand Opportunities Creation
                 </h2>
 
-                {/* Filter Section */}
+
                 {/* Filter Section */}
                 <div className="flex flex-col gap-4 mb-6">
                     {/* Title */}
@@ -239,7 +304,8 @@ function OpportunityCreation() {
                     </h3>
 
                     {/* Filters row */}
-                    <div className="flex gap-8 ">
+                    <div className="flex gap-8">
+
                         {/* Owner */}
                         <div className="max-w-md w-full">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -247,9 +313,14 @@ function OpportunityCreation() {
                             </label>
                             <Select
                                 options={ownerOptions}
-                                value={{ value: ownerFilter, label: ownerFilter }}
-                                onChange={(option) => setOwnerFilter(option?.value || '')}
+                                value={ownerFilter}
+                                onChange={(options) => setOwnerFilter([...(options || [])])}
+                                isMulti
+                                closeMenuOnSelect={true}
                                 isSearchable
+                                components={{ Option: CheckboxOption }}
+                                // styles={customStyles}
+
                             />
                         </div>
 
@@ -273,12 +344,19 @@ function OpportunityCreation() {
                             </label>
                             <Select
                                 options={territoryOptions}
-                                value={{ value: territoryFilter, label: territoryFilter }}
-                                onChange={(option) => setTerritoryFilter(option?.value || '')}
+                                value={territoryFilter}
+                                onChange={(options) => setTerritoryFilter([...(options || [])])}
+                                isMulti
+                                closeMenuOnSelect={true}
+                                components={{ Option: CheckboxOption }}
                                 isSearchable
+
                             />
                         </div>
+
+
                     </div>
+
                 </div>
 
 
@@ -355,7 +433,7 @@ function OpportunityCreation() {
                     {/* Pagination */}
                     <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                         <div className="flex items-center gap-6 text-sm text-gray-700">
-                            <span>Total Records: {accounts.length}</span>
+                            <span>Total Records: {filteredAccounts.length}</span>
                             <span>Total Selected: {selectedAccounts.length}</span>
                         </div>
                         <div className="flex items-center gap-4">
@@ -401,16 +479,17 @@ function OpportunityCreation() {
     ${!opportunityName ? 'border-red-500' : 'border-gray-300'}`}
                             />
                         </div>
-
-                        <div>
+                        {/* Sales Cycle */}
+                        <div className="max-w-md w-full">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Sales Cycle <span className="text-red-500">*</span>
                             </label>
-                            < SalesCycles
+                            <SalesCycles
                                 value={selectedCycle}
-                                onChange={setSelectedCycle} />
-
+                                onChange={setSelectedCycle}
+                            />
                         </div>
+
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -423,6 +502,7 @@ function OpportunityCreation() {
                                 onChange={setSelectedPhase}
                                 selectedCycleCode={selectedCycle} />
                         </div>
+
 
                         {/* Row 2 */}
                         <div>
