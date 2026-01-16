@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 
-import Select from 'react-select';
-import { components } from 'react-select';
-import type { OptionProps } from 'react-select';
 import SalesCycles from './SalesCycle';
 import SalesPhase from './SalesPhase';
 import OpportunityStatus from './OpportunityStatus'
 import CategoriesSelect from './CategoriesSelect';
 
-import { TableHead } from './TableHead';
+
 import { useAccounts } from '../hooks/useAccounts';
 import { api } from "../api"
+import AccountsFilters from './AccountsFilters';
+import AccountsTable from './AccountsTable';
 function OpportunityCreation() {
 
     const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
@@ -75,45 +73,7 @@ function OpportunityCreation() {
     const territoryAcconts = ['All Territories', 'All except USA', ...territoryFromAccounts];
     const territoryOptions = territoryAcconts.map((t) => ({ value: t, label: t }))
 
-    // בחירה עם checkbox בתוך הסלקט
-    const CheckboxOption = (props: OptionProps<any>) => {
-        return (
-            <components.Option {...props}>
-                <input
-                    type="checkbox"
-                    checked={props.isSelected}
-                    readOnly
-                    style={{ marginRight: 8 }}
-                />
-                <span>{props.label}</span>
-            </components.Option>
-        );
-    };
-    // const customStyles: StylesConfig<any, true> = {
-    //     control: (provided) => ({
-    //         ...provided,
-    //         minHeight: '38px',
-    //         maxHeight: '38px',
-    //     }),
-    //     valueContainer: (provided) => ({
-    //         ...provided,
-    //         maxHeight: '32px',
-    //         overflowX: 'auto',        // 🔥 גלילה אופקית (ימינה-שמאלה)
-    //         overflowY: 'hidden',      // 🔥 בלי גלילה אנכית
-    //         display: 'flex',
-    //         flexDirection: 'row',     // 🔥 שורה (לא עמודה!)
-    //         flexWrap: 'nowrap',       // 🔥 לא לשבור שורה
-    //         alignItems: 'center',     // 🔥 ממורכז אנכית
-    //         padding: '2px 4px',
-    //         gap: '4px',
-    //     }),
-    //     multiValue: (provided) => ({
-    //         ...provided,
-    //         flexShrink: 0,            // 🔥 מונע כיווץ של התגים
-    //         margin: '0',
-    //         whiteSpace: 'nowrap',     // 🔥 התוכן לא נשבר
-    //     }),
-    // };
+
     const filteredAccounts = accounts.filter(acc => {
         const ownerMatch =
             ownerFilter.length === 0 ||
@@ -132,13 +92,6 @@ function OpportunityCreation() {
             (selectedTerritoryValues.includes('All except USA') && accountTerritory !== 'United States') ||
             selectedTerritoryValues.includes(accountTerritory);
 
-        // const salesCycleMatch =
-        //     !selectedCycle ||
-        //     (
-        //         selectedCycle === 'Z002'
-        //             ? acc.salesTerritories?.[0]?.salesTerritoryName === 'United States'
-        //             : acc.salesTerritories?.[0]?.salesTerritoryName !== 'United States'
-        //     );
 
         return ownerMatch && nameMatch && territoryMatch;
     });
@@ -158,8 +111,8 @@ function OpportunityCreation() {
 
 
 
-    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.checked) {
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
             setSelectedAccounts(currentAccounts.map(acc => acc.displayId));
         } else {
             setSelectedAccounts([]);
@@ -238,7 +191,7 @@ function OpportunityCreation() {
                 processingTypeCode: selectedCategory
             });
 
-            console.log('Response:', response.data);
+            console.log('ResponseData:', response.data);
 
             const { successful, failed, results } = response.data;
 
@@ -295,168 +248,41 @@ function OpportunityCreation() {
                     New Brand Opportunities Creation
                 </h2>
 
+                {/* // Filter Sections */}
+                <AccountsFilters
+                    ownerOptions={ownerOptions}
+                    ownerFilter={ownerFilter}
+                    onOwnerChange={setOwnerFilter}
 
-                {/* Filter Section */}
-                <div className="flex flex-col gap-4 mb-6">
-                    {/* Title */}
-                    <h3 className="text-lg font-medium text-gray-900 pr-160">
-                        Filter by:
-                    </h3>
+                    namesOptions={namesOptions}
+                    nameFilter={nameFilter}
+                    onNameChange={setNameFilter}
 
-                    {/* Filters row */}
-                    <div className="flex gap-8">
+                    territoryOptions={territoryOptions}
+                    territoryFilter={territoryFilter}
+                    onTerritoryChange={setTerritoryFilter}
+                />
+                {/*  Account table section */}
+                <AccountsTable
+                    accounts={currentAccounts}
+                    selectedAccounts={selectedAccounts}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalRecords={filteredAccounts.length}
 
-                        {/* Owner */}
-                        <div className="max-w-md w-full">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Owner
-                            </label>
-                            <Select
-                                options={ownerOptions}
-                                value={ownerFilter}
-                                onChange={(options) => setOwnerFilter([...(options || [])])}
-                                isMulti
-                                closeMenuOnSelect={true}
-                                isSearchable
-                                components={{ Option: CheckboxOption }}
-                                // styles={customStyles}
+                    onSelectAccount={handleSelectAccount}
+                    onSelectAll={handleSelectAll}
 
-                            />
-                        </div>
+                    onNextPage={handleNextPage}
+                    onPrevPage={handlePrevPage}
 
-                        {/* Name */}
-                        <div className="max-w-md w-full">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Name
-                            </label>
-                            <Select
-                                options={namesOptions}
-                                value={{ value: nameFilter, label: nameFilter }}
-                                onChange={(option) => setNameFilter(option?.value || '')}
-                                isSearchable
-                            />
-                        </div>
-
-                        {/* Territory */}
-                        <div className="max-w-md w-full">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Territory
-                            </label>
-                            <Select
-                                options={territoryOptions}
-                                value={territoryFilter}
-                                onChange={(options) => setTerritoryFilter([...(options || [])])}
-                                isMulti
-                                closeMenuOnSelect={true}
-                                components={{ Option: CheckboxOption }}
-                                isSearchable
-
-                            />
-                        </div>
-
-
-                    </div>
-
-                </div>
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleSort}
+                />
 
 
 
-                {/* Table Section */}
-                <div className="bg-white rounded-lg shadow-sm mb-6">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                                <tr>
-
-                                    <th className="px-6 py-4 text-left">
-
-                                        <div className="flex items-center gap-2 mr-3">
-                                            <span className="text-sm font-medium text-gray-900">
-                                                All
-                                            </span>
-                                            <input
-                                                type="checkbox"
-                                                checked={currentAccounts.length > 0 && currentAccounts.every(acc => selectedAccounts.includes(acc.displayId))}
-                                                onChange={handleSelectAll}
-                                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                                            />
-
-                                        </div>
-                                    </th>
-
-
-                                    <TableHead
-                                        headName="Client Name"
-                                        field="name"
-                                        sortField={sortField}
-                                        sortDirection={sortDirection}
-                                        handleSort={handleSort}
-                                    />
-
-                                    <th className="px-6 py-4 pl-10 text-left text-sm font-semibold text-gray-900">
-                                        Owner
-                                    </th>
-                                    <TableHead
-                                        headName="Territory"
-                                        field="territory"
-                                        sortField={sortField}
-                                        sortDirection={sortDirection}
-                                        handleSort={handleSort}
-                                    />
-
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {currentAccounts.map((account) => {
-
-                                    return (
-                                        <tr key={account.displayId} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedAccounts.includes(account.displayId)}
-                                                    onChange={() => handleSelectAccount(account.displayId)}
-                                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                                                />
-                                            </td>
-
-                                            <td className="px-6 py-4 text-sm text-gray-900">{account?.formattedName.substring(0, account?.formattedName.lastIndexOf(' '))}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{account?.ownerFormattedName || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{account?.salesTerritories?.[0]?.salesTerritoryName || '-'}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Pagination */}
-                    <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                        <div className="flex items-center gap-6 text-sm text-gray-700">
-                            <span>Total Records: {filteredAccounts.length}</span>
-                            <span>Total Selected: {selectedAccounts.length}</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-gray-700">Page {currentPage} of {totalPages}</span>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handlePrevPage}
-                                    disabled={currentPage === 1}
-                                    className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
-                                >
-                                    <ChevronLeft className="w-5 h-5 text-gray-600" />
-                                </button>
-                                <button
-                                    onClick={handleNextPage}
-                                    disabled={currentPage === totalPages}
-                                    className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
-                                >
-                                    <ChevronRight className="w-5 h-5 text-gray-600" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Create Opportunity Form */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
