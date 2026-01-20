@@ -69,6 +69,7 @@ jobs:
               "URL_SALES_CYCLES=${{ secrets.URL_SALES_CYCLES }}" \
               "URL_STATUS=${{ secrets.URL_STATUS }}" \
               "URL_CATEGORIES=${{ secrets.URL_CATEGORIES }}" \
+              "URL_OPPORTUNITY_SERIES=${{ secrets.URL_OPPORTUNITY_SERIES}}"
               "URL_OPPORTUNITY=${{ secrets.URL_OPPORTUNITY }}" \
               "SAP_USER=${{ secrets.SAP_USER }}" \
               "SAP_PASSWORD=${{ secrets.SAP_PASSWORD }}" \
