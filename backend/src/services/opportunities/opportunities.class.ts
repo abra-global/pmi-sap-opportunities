@@ -22,6 +22,7 @@ interface CreateOpportunityData {
   salesPhaseCode: string;
   lifeCycleStatus: string;
   processingTypeCode: string;
+  seriesCode?: string;
 }
 
 // This is a skeleton for a custom service class. Remove or add the methods you need here
@@ -52,13 +53,37 @@ export class OpportunitiesService {
       throw error;
     }
   }
+  async get(id: Id, params?: Params): Promise<any> {
+    const baseUrl = process.env.BASE_URL_SAP
+    const serieiesUrl = process.env.URL_OPPORTUNITY_SERIES
+    try {
+      if (id === 'series') {
+
+        const res = await axios.get(`${baseUrl}/${serieiesUrl}`, {
+          auth: {
+            username: process.env.SAP_USER || '',
+            password: process.env.SAP_PASSWORD || ''
+          }
+
+        })
+        console.log("serriess:", res.data.value)
+        return res.data.value.content
+      }
+
+
+    } catch (error: any) {
+      console.error('❌ Error:', error.response?.data || error.message);
+      throw error;
+
+    }
+  }
   async create(data: CreateOpportunityData, params?: Params): Promise<any> {
 
 
 
     const baseUrl = process.env.BASE_URL_SAP
     const opportunityUrl = process.env.URL_OPPORTUNITY
-    const { oppName, accounts, salesCycleCode, salesPhaseCode, lifeCycleStatus, processingTypeCode } = data;
+    const { oppName, accounts, salesCycleCode, salesPhaseCode, lifeCycleStatus, processingTypeCode, seriesCode } = data;
     const results = [];
 
     for (const account of accounts) {
@@ -66,20 +91,26 @@ export class OpportunitiesService {
       console.log("accountName", accountName)
       const fullOpportunityName = `${accountName}-${oppName}`
       try {
+        const reqBody: any = { 
+          name: fullOpportunityName,
+          account: {
+            id: account.id
+          },
+          salesCycle: salesCycleCode,
+          salesPhase: salesPhaseCode,
+          customStatus: lifeCycleStatus,
+          category: processingTypeCode,
+          currencyCode: "USD"
+        }; 
+
+        if (seriesCode) {
+          reqBody.extensions = {
+            zSerieses: seriesCode
+          };
+        }
         const response = await axios.post(
           `${baseUrl}/${opportunityUrl}`,
-          {
-            name: fullOpportunityName,
-            account: {
-              id: account.id
-            },
-            
-            salesCycle: salesCycleCode,
-            salesPhase: salesPhaseCode,
-            customStatus: lifeCycleStatus,
-            category: processingTypeCode,
-            currencyCode: "USD"
-          },
+          reqBody,
           {
             auth: {
               username: process.env.SAP_USER || '',
@@ -107,6 +138,7 @@ export class OpportunitiesService {
       total: accounts.length,
       successful: results.filter(r => r.success).length,
       failed: results.filter(r => !r.success).length,
+      reasonFailed: results.filter(r => !r.success).map(r => r.error),
       results
     };
   }

@@ -1,7 +1,7 @@
 // import axios from "axios"
 import { useEffect, useState } from "react";
 import Select from "react-select"
-import { api } from "../api"
+import { api } from "../../api"
 interface SalesPhaseProps {
     value: string,
     onChange: (value: string) => void,
@@ -52,7 +52,7 @@ export default function SalesPhase({ value, onChange, selectedCycleCode }: Sales
             }
             
         }
-    }, [salesPhase])
+    }, [salesPhase, value])
     
 
     const filteredPhases = selectedCycleCode

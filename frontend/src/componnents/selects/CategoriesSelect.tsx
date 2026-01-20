@@ -1,7 +1,7 @@
 // import axios from "axios";
 import { useEffect, useState } from "react";
 import Select from "react-select";
-import {api} from "../api"
+import {api} from "../../api"
 
 interface CategoryProps{
     value: string,

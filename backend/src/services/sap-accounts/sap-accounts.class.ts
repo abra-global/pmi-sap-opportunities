@@ -19,7 +19,9 @@ type ApiSapAccount = {
   formattedName: string
   ownerFormattedName?: string
   salesTerritories?: ApiSalesTerritory[]
+  lifeCycleStatus?: string
 }
+
 
 
 // type SapAccountResponse = {
@@ -63,18 +65,12 @@ export class SapAccountsService {
         }
       }
 
-      // const accounts: SapAccountResponse[] = allAccounts.map((item) => ({
-      //   id: item.id,
-      //   accountCode: item.displayId,
-      //   accountName: item.formattedName,
-      //   owner: item.ownerFormattedName || 'Unknown',
-      //   territory: item.salesTerritories && item.salesTerritories.length > 0
-      //     ? item.salesTerritories[0].salesTerritoryName
-      //     : 'Unknown'
-      // }))
-
+     
+       
       console.log('Fetched accounts:', allAccounts.length)
-      return allAccounts
+      const activeAccounts = allAccounts.filter(acc => acc?.lifeCycleStatus === 'ACTIVE')
+      console.log('Fetched accounts:', activeAccounts.length)
+      return activeAccounts
     } catch (error: any) {
       console.error("Full error:", error.response?.data || error.message)
       throw new Error(`Failed to fetch accounts: ${error.message}`)

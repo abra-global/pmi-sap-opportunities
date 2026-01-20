@@ -9,7 +9,7 @@ export const opportunitiesPath = 'opportunities'
 
 export const opportunitiesMethods: Array<keyof OpportunitiesService> = [
   
-  'create', 'find'
+  'create', 'find', 'get'
 
 ]
 
@@ -28,9 +28,9 @@ export const opportunities = (app: Application) => {
       all: []
     },
     before: {
-      all: [],
-      
+      all: [],     
       create: [],
+      get: []
       
     },
     after: {

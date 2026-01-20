@@ -1,12 +1,14 @@
 // import axios from "axios";
 import { useEffect, useState } from "react";
 import Select from "react-select";
-import {api} from "../api"
+import {api} from "../../api"
 interface SalesCyclesProps {
     value: string;
     onChange: (value: string) => void;
 }
 export default function SalesCycles({value, onChange}: SalesCyclesProps ) {
+    console.log("salesCycle before submit:", value);
+
     const [salesCycles, setSalesCycles] = useState<any[]>([]);
     // const [selectedCycle, setSelectedCycle] = useState("");
     
@@ -37,7 +39,7 @@ export default function SalesCycles({value, onChange}: SalesCyclesProps ) {
             }
         }
 
-    },[salesCycles] )
+    },[salesCycles, value] )
 
     const optionsCycle =       
         salesCycles.filter((cycle) => cycle.isActive == true)

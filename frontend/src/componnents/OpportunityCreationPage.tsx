@@ -1,34 +1,35 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 
-import SalesCycles from './SalesCycle';
-import SalesPhase from './SalesPhase';
-import OpportunityStatus from './OpportunityStatus'
-import CategoriesSelect from './CategoriesSelect';
+import SalesCycles from '../componnents/selects/SalesCycle';
+import SalesPhase from '../componnents/selects/SalesPhase';
+import OpportunityStatus from '../componnents/selects/OpportunityStatus'
+import CategoriesSelect from '../componnents/selects/CategoriesSelect';
+import SeriesSelect from '../componnents/selects/SeriesSelect';
 
-
+//Hooks
+import { useOpportunityForm } from '../hooks/useOpportunityForm';
 import { useAccounts } from '../hooks/useAccounts';
-import { api } from "../api"
+
+import { api } from ".././componnents/../api"
 import AccountsFilters from './AccountsFilters';
 import AccountsTable from './AccountsTable';
 function OpportunityCreation() {
 
     const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
-    const [opportunityName, setOpportunityName] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('')
-    const [selectedStatus, setSelectedStatus] = useState('')
-    const [selectedPhase, setSelectedPhase] = useState('')
+    const formData = useOpportunityForm();
+  
 
     // חיפוש סטייטס
     const [ownerFilter, setOwnerFilter] = useState<{ value: string; label: string }[]>([]);
     const [nameFilter, setNameFilter] = useState('All Names');
     const [territoryFilter, setTerritoryFilter] = useState<{ value: string; label: string }[]>([]);
-    const [selectedCycle, setSelectedCycle] = useState('');
+  
 
     const [sortField, setSortField] = useState<string | null>(null)
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
-    // const baseUrl = import.meta.env.VITE_API_URL as string
+   
 
     const { accounts, loading, setAccounts, setLoading } = useAccounts();
 
@@ -113,7 +114,7 @@ function OpportunityCreation() {
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            setSelectedAccounts(currentAccounts.map(acc => acc.displayId));
+            setSelectedAccounts(filteredAccounts.map(acc => acc.displayId));
         } else {
             setSelectedAccounts([]);
         }
@@ -138,13 +139,8 @@ function OpportunityCreation() {
             setCurrentPage(currentPage - 1);
         }
     };
-    const isFormValid =
-        opportunityName.trim() !== '' &&
-        selectedAccounts.length > 0 &&
-        selectedCycle &&
-        selectedPhase &&
-        selectedStatus &&
-        selectedCategory;
+  
+    const isFormValid = formData.isFormValid && selectedAccounts.length > 0;
 
     const [showValidationError, setShowValidationError] = useState(false);
 
@@ -183,21 +179,27 @@ function OpportunityCreation() {
             }).filter(acc => acc.id && acc.name)
 
             const response = await api.post(`/opportunities`, {
-                oppName: opportunityName,
+                oppName: formData.opportunityName,
                 accounts: selectedAccountsData,
-                salesCycleCode: selectedCycle,
-                salesPhaseCode: selectedPhase,
-                lifeCycleStatus: selectedStatus,
-                processingTypeCode: selectedCategory
+                salesCycleCode: formData.selectedCycle,
+                salesPhaseCode: formData.selectedPhase,
+                lifeCycleStatus: formData.selectedStatus,
+                processingTypeCode: formData.selectedCategory,
+                seriesCode: formData.selectedSeries
             });
+
 
             console.log('ResponseData:', response.data);
 
             const { successful, failed, results } = response.data;
 
             if (failed === 0) {
+                resetForm();
+
                 alert(`✅ Successfully created ${successful} opportunities!`);
             } else {
+
+
                 const failedDetails = results
                     .filter((r: any) => !r.success)
                     .map((r: any) => `${r.accountId}: ${r.error}`)
@@ -207,13 +209,6 @@ function OpportunityCreation() {
             }
 
 
-            setSelectedAccounts([]);
-            setOpportunityName('');
-            setSelectedStatus('');
-            setSelectedPhase('');
-            setSelectedCycle('')
-            setSelectedStatus('');
-            setSelectedCategory('');
 
         } catch (error: any) {
             console.error('Error:', error);
@@ -222,21 +217,18 @@ function OpportunityCreation() {
             setLoading(false);
         }
     }
+
+    const resetForm = () => {
+        setSelectedAccounts([]);
+        formData.resetForm();
+    };
     const handleCancel = () => {
         setSelectedAccounts([]);
-        setOpportunityName('');
-        setSelectedStatus('');
-        setSelectedPhase('');
-        setSelectedCycle('')
-        setSelectedStatus('');
-        setSelectedCategory('');
+        formData.resetForm();
+    };
 
-    }
-    useEffect(() => {
-        setSelectedAccounts([]);
 
-        setCurrentPage(1);
-    }, [selectedCycle]);
+
 
 
 
@@ -298,11 +290,11 @@ function OpportunityCreation() {
                             </label>
                             <input
                                 type="text"
-                                value={opportunityName}
-                                onChange={(e) => setOpportunityName(e.target.value)}
+                                value={formData.opportunityName}
+                                onChange={(e) => formData.setOpportunityName(e.target.value)}
                                 placeholder="Enter opportunity name"
                                 className={`w-full px-4 py-2.5 border rounded-lg
-    ${!opportunityName ? 'border-red-500' : 'border-gray-300'}`}
+    ${!formData.opportunityName ? 'border-red-500' : 'border-gray-300'}`}
                             />
                         </div>
                         {/* Sales Cycle */}
@@ -311,8 +303,8 @@ function OpportunityCreation() {
                                 Sales Cycle <span className="text-red-500">*</span>
                             </label>
                             <SalesCycles
-                                value={selectedCycle}
-                                onChange={setSelectedCycle}
+                                value={formData.selectedCycle}
+                                onChange={formData.setSelectedCycle}
                             />
                         </div>
 
@@ -322,11 +314,11 @@ function OpportunityCreation() {
                                 Sales Phase <span className="text-red-500">*</span>
                             </label>
 
-                            < SalesPhase
-
-                                value={selectedPhase}
-                                onChange={setSelectedPhase}
-                                selectedCycleCode={selectedCycle} />
+                            <SalesPhase
+                                value={formData.selectedPhase}
+                                onChange={formData.setSelectedPhase}
+                                selectedCycleCode={formData.selectedCycle}
+                            />
                         </div>
 
 
@@ -336,8 +328,8 @@ function OpportunityCreation() {
                                 Status <span className="text-red-500">*</span>
                             </label>
                             < OpportunityStatus
-                                value={selectedStatus}
-                                onChange={setSelectedStatus} />
+                                value={formData.selectedStatus}
+                                onChange={formData.setSelectedStatus} />
                         </div>
 
                         <div>
@@ -345,8 +337,16 @@ function OpportunityCreation() {
                                 Brand <span className="text-red-500">*</span>
                             </label>
                             <CategoriesSelect
-                                value={selectedCategory}
-                                onChange={setSelectedCategory} />
+                                value={formData.selectedCategory}
+                                onChange={formData.setSelectedCategory} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Series <span className="text-red-500"></span>
+                            </label>
+                            <SeriesSelect
+                                value={formData.selectedSeries}
+                                onChange={formData.setSelectedSeries} />
                         </div>
 
 
