@@ -55,11 +55,13 @@ export class OpportunitiesService {
   }
   async get(id: Id, params?: Params): Promise<any> {
     const baseUrl = process.env.BASE_URL_SAP
-    const serieiesUrl = process.env.URL_OPPORTUNITY_SERIES
+    const seriesUrl = process.env.URL_OPPORTUNITY_SERIES
+    console.log("baseUrl:", baseUrl)
+    console.log("seriesUrl: ", seriesUrl)
     try {
       if (id === 'series') {
 
-        const res = await axios.get(`${baseUrl}/${serieiesUrl}`, {
+        const res = await axios.get(`${baseUrl}/${seriesUrl}`, {
           auth: {
             username: process.env.SAP_USER || '',
             password: process.env.SAP_PASSWORD || ''
