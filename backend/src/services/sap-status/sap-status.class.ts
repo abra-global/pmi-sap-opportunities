@@ -24,7 +24,7 @@ export class SapStatusService {
           password: process.env.SAP_PASSWORD  || ''
         }}
        )
-       console.log("res:", results.data.value)
+      //  console.log("res:", results.data.value)
        console.log("len:", results.data.value.length)
 
     return results.data.value

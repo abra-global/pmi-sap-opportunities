@@ -28,7 +28,7 @@ export class SapSalesCyclesService {
           }
         }
       )
-      console.log("res:", results.data)
+      // console.log("res:", results.data)
       console.log("len:", results.data.value.length)
 
       return results.data.value

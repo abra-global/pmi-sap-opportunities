@@ -45,7 +45,7 @@ export class OpportunitiesService {
         }
       );
 
-      console.log('📥 Opportunities from SAP:', response.data);
+      // console.log('📥 Opportunities from SAP:', response.data);
       return response.data;
 
     } catch (error: any) {

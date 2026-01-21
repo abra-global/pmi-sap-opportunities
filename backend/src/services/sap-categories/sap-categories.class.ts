@@ -23,7 +23,7 @@ export class SapCategoriesService{
           password: process.env.SAP_PASSWORD  || ''
         }}
       )
-      console.log(results.data)
+      // console.log(results.data)
       return results.data.value
 
     }catch(error: any){

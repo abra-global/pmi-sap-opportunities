@@ -1,6 +1,7 @@
-import axios from "axios"
+
 import { useEffect, useState } from "react"
 import Select from "react-select"
+import {api } from "../../api"
 
 interface SeriesSelectProps {
     value: string
@@ -12,7 +13,7 @@ export default function SeriesSelect({ value, onChange }: SeriesSelectProps) {
     const fetchSeries = async () => {
         const baseUrl = import.meta.env.VITE_API_URL
         try {
-            const response = await axios.get(`${baseUrl}/opportunities/series`)
+            const response = await api.get(`${baseUrl}/opportunities/series`)
             setSeries(response.data)
             console.log("serriesData: ", response.data)
         } catch (error: any) {
