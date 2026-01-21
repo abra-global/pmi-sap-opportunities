@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 
 import SalesCycles from '../componnents/selects/SalesCycle';
@@ -18,18 +18,18 @@ function OpportunityCreation() {
 
     const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
     const formData = useOpportunityForm();
-  
+
 
     // חיפוש סטייטס
     const [ownerFilter, setOwnerFilter] = useState<{ value: string; label: string }[]>([]);
     const [nameFilter, setNameFilter] = useState('All Names');
     const [territoryFilter, setTerritoryFilter] = useState<{ value: string; label: string }[]>([]);
-  
+
 
     const [sortField, setSortField] = useState<string | null>(null)
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null)
 
-   
+
 
     const { accounts, loading, setAccounts, setLoading } = useAccounts();
 
@@ -78,6 +78,7 @@ function OpportunityCreation() {
     const filteredAccounts = accounts.filter(acc => {
         const ownerMatch =
             ownerFilter.length === 0 ||
+            (ownerFilter.some(filter => filter.value === 'All Owners') ) ||
             ownerFilter.some(filter => filter.value === acc.ownerFormattedName);
 
         const nameMatch =
@@ -139,7 +140,7 @@ function OpportunityCreation() {
             setCurrentPage(currentPage - 1);
         }
     };
-  
+
     const isFormValid = formData.isFormValid && selectedAccounts.length > 0;
 
     const [showValidationError, setShowValidationError] = useState(false);
@@ -230,7 +231,10 @@ function OpportunityCreation() {
 
 
 
+    useEffect(() => {
+        setCurrentPage(1)
 
+    }, [territoryFilter, ownerFilter])
 
     return (
         <div className="min-h-screen bg-gray-50 p-8">
