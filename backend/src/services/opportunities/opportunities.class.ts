@@ -89,9 +89,9 @@ export class OpportunitiesService {
     const results = [];
 
     for (const account of accounts) {
-      const accountName = account.name.substring(0, account.name.lastIndexOf(' '))
-      console.log("accountName", accountName)
-      const fullOpportunityName = `${accountName}-${oppName}`
+      // const accountName = account.name.substring(0, account.name.lastIndexOf(' '))
+      console.log("accountName", account.name)
+      const fullOpportunityName = `${account.name}-${oppName}`
       try {
         const reqBody: any = { 
           name: fullOpportunityName,
